@@ -16,6 +16,11 @@ os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
 os.environ["OPENAI_API_KEY"]    = os.getenv("OPENAI_API_KEY")
 os.environ["TAVILY_API_KEY"]    = os.getenv("tavily_search_api")
 
+
+os.environ["LANGSMITH_API_KEY"] = os.getenv("LANGSMITH_API_KEY")
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+os.environ["LANGCHAIN_PROJECT"] = "project-agent-rag"
+
 app = FastAPI()
 logger = get_logger(__name__)
 db_path = "./src/db/fiass_index"

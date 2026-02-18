@@ -12,5 +12,6 @@ wheels/
 notebook.ipynb
 uv.lock
 pyproject.toml
+logs
 
 

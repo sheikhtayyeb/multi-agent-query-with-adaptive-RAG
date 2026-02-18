@@ -5,7 +5,9 @@
 ═══════════════════════════════════════════════════════ */
 
 // ── Config ──────────────────────────────────────────────────
-const API_BASE = "https://multi-agent-query-with-rag-257612295763.us-central1.run.app"; // ← update to your FastAPI base URL
+const API_BASE = window.location.hostname === "localhost"
+  ? "http://localhost:8000"
+  : window.location.origin; // ← update to your FastAPI base URL
 
 const ENDPOINTS = {
   ingest: `${API_BASE}/save-data-vectordb`,
