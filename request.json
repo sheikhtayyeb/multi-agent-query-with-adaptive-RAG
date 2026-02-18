@@ -1,0 +1,10 @@
+{
+    "urls": ["https://docs.langchain.com/oss/python/langgraph/overview",
+        "https://docs.langchain.com/oss/python/langgraph/thinking-in-langgraph",
+        "https://docs.langchain.com/oss/python/langgraph/workflows-agents"
+        ]
+}
+
+{
+    "question": "Hi! Tell me about attention mechanism."
+}

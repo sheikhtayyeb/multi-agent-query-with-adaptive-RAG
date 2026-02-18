@@ -1,0 +1,15 @@
+```
+
+### `.dockerignore`
+```
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+.venv
+.env
+.git
+.gitignore
+logs/
+*.ipynb
+uv.lock

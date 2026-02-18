@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AdaptiveRAG — Multiagent Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Background grid -->
+  <div class="bg-grid"></div>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">Adaptive<span class="accent">RAG</span></span>
+    </div>
+    <nav class="nav-pills">
+      <button class="nav-pill active" data-tab="ingest">Ingest</button>
+      <button class="nav-pill" data-tab="query">Query</button>
+      <button class="nav-pill" data-tab="logs">Logs</button>
+    </nav>
+    <div class="status-badge">
+      <span class="status-dot"></span>
+      <span id="api-status-text">Connecting…</span>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- ═══════════════════════════════ INGEST TAB ═══════════════════════════════ -->
+    <section class="tab-panel active" id="tab-ingest">
+      <div class="panel-header">
+        <h2 class="panel-title">Knowledge Ingestion</h2>
+        <p class="panel-sub">Feed URLs into the vector store. Each document is chunked, embedded with <code>text-embedding-3-large</code>, and indexed at 1024 dimensions.</p>
+      </div>
+
+      <div class="ingest-layout">
+        <!-- URL input zone -->
+        <div class="card url-card">
+          <div class="card-label">
+            <span class="step-badge">01</span> Document Sources
+          </div>
+
+          <div class="url-list" id="url-list">
+            <!-- URL rows injected by JS -->
+          </div>
+
+          <button class="add-url-btn" id="add-url-btn">
+            <span>+</span> Add URL
+          </button>
+
+          <div class="divider"></div>
+
+          <div class="config-row">
+            <div class="config-field">
+              <label>Chunk Size</label>
+              <input type="number" id="chunk-size" value="500" min="100" max="2000" />
+            </div>
+            <div class="config-field">
+              <label>Chunk Overlap</label>
+              <input type="number" id="chunk-overlap" value="50" min="0" max="500" />
+            </div>
+            <div class="config-field">
+              <label>Vector DB Path</label>
+              <input type="text" id="db-path" placeholder="./chroma_db" />
+            </div>
+          </div>
+
+          <button class="primary-btn" id="ingest-btn">
+            <span class="btn-icon">⬡</span>
+            <span class="btn-text">Vectorise & Store</span>
+            <span class="btn-loader" id="ingest-loader"></span>
+          </button>
+        </div>
+
+        <!-- Ingest status -->
+        <div class="card status-card" id="ingest-status-card">
+          <div class="card-label">
+            <span class="step-badge">02</span> Pipeline Status
+          </div>
+          <div class="pipeline-steps" id="pipeline-steps">
+            <div class="pipe-step idle" data-step="fetch">
+              <span class="pipe-icon">↓</span>
+              <div class="pipe-info">
+                <span class="pipe-name">Fetching Documents</span>
+                <span class="pipe-detail">Loading URL content</span>
+              </div>
+              <span class="pipe-state">—</span>
+            </div>
+            <div class="pipe-step idle" data-step="chunk">
+              <span class="pipe-icon">⊞</span>
+              <div class="pipe-info">
+                <span class="pipe-name">Splitting Chunks</span>
+                <span class="pipe-detail">Recursive text splitting</span>
+              </div>
+              <span class="pipe-state">—</span>
+            </div>
+            <div class="pipe-step idle" data-step="embed">
+              <span class="pipe-icon">◎</span>
+              <div class="pipe-info">
+                <span class="pipe-name">Embedding</span>
+                <span class="pipe-detail">text-embedding-3-large · 1024d</span>
+              </div>
+              <span class="pipe-state">—</span>
+            </div>
+            <div class="pipe-step idle" data-step="index">
+              <span class="pipe-icon">⬡</span>
+              <div class="pipe-info">
+                <span class="pipe-name">Indexing VectorDB</span>
+                <span class="pipe-detail">Chroma / FAISS persistence</span>
+              </div>
+              <span class="pipe-state">—</span>
+            </div>
+          </div>
+
+          <div class="status-result" id="ingest-result" style="display:none">
+            <div class="result-icon success-icon">✓</div>
+            <div class="result-text" id="ingest-result-text">Ready.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════ QUERY TAB ═══════════════════════════════ -->
+    <section class="tab-panel" id="tab-query">
+      <div class="panel-header">
+        <h2 class="panel-title">Agentic Query</h2>
+        <p class="panel-sub">Ask a question. The multiagent graph routes, retrieves, grades, rewrites and synthesises an answer adaptively.</p>
+      </div>
+
+      <div class="query-layout">
+        <!-- Left: Input + answer -->
+        <div class="query-col-main">
+          <div class="card query-input-card">
+            <div class="query-input-wrap">
+              <span class="query-prompt">?</span>
+              <textarea id="question-input" class="question-input" rows="3" placeholder="What would you like to know from your indexed documents?"></textarea>
+            </div>
+            <div class="query-footer">
+              <button class="primary-btn" id="query-btn">
+                <span class="btn-icon">⟡</span>
+                <span class="btn-text">Run Agent Graph</span>
+                <span class="btn-loader" id="query-loader"></span>
+              </button>
+              <button class="ghost-btn" id="clear-btn">Clear</button>
+            </div>
+          </div>
+
+          <!-- Answer card -->
+          <div class="card answer-card" id="answer-card" style="display:none">
+            <div class="card-label">
+              <span class="step-badge accent-badge">⟡</span> Answer
+              <span class="answer-meta" id="answer-meta"></span>
+            </div>
+            <div class="answer-body" id="answer-body"></div>
+            <div class="answer-sources" id="answer-sources"></div>
+          </div>
+
+          <!-- Error card -->
+          <div class="card error-card" id="error-card" style="display:none">
+            <span class="error-icon">⚠</span>
+            <span id="error-message"></span>
+          </div>
+        </div>
+
+        <!-- Right: Agent trace -->
+        <div class="query-col-side">
+          <div class="card trace-card">
+            <div class="card-label">
+              <span class="step-badge">⬡</span> Agent Trace
+            </div>
+            <div class="trace-timeline" id="trace-timeline">
+              <div class="trace-empty">
+                <span class="trace-empty-icon">◎</span>
+                <span>Graph trace will appear here</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- State Inspector -->
+          <div class="card state-card">
+            <div class="card-label">
+              <span class="step-badge">{ }</span> State Inspector
+            </div>
+            <pre class="state-pre" id="state-pre">// No state yet</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════ LOGS TAB ═══════════════════════════════ -->
+    <section class="tab-panel" id="tab-logs">
+      <div class="panel-header">
+        <h2 class="panel-title">System Logs</h2>
+        <p class="panel-sub">Real-time event feed from both the ingestion and query pipelines.</p>
+      </div>
+      <div class="card logs-card">
+        <div class="logs-toolbar">
+          <div class="log-filters">
+            <button class="log-filter active" data-level="all">All</button>
+            <button class="log-filter" data-level="info">INFO</button>
+            <button class="log-filter" data-level="success">SUCCESS</button>
+            <button class="log-filter" data-level="error">ERROR</button>
+          </div>
+          <button class="ghost-btn small" id="clear-logs-btn">Clear</button>
+        </div>
+        <div class="log-stream" id="log-stream">
+          <div class="log-welcome">
+            <span class="mono">[system] AdaptiveRAG frontend initialized. Waiting for activity…</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
